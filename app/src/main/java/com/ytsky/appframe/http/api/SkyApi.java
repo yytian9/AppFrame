@@ -5,7 +5,7 @@ import com.ytsky.appframe.http.base.BaseEntity;
 
 import java.util.Map;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.POST;
@@ -18,7 +18,7 @@ import retrofit2.http.Path;
  */
 public interface SkyApi {
     @FormUrlEncoded
-    @POST("/{sourceUrl}")
-    Observable<BaseEntity> request(@Path("sourceUrl") String sourceUrl,
-                                   @FieldMap Map<String, Object> params);
+    @POST("{sourceUrl}")
+    Flowable<BaseEntity> request(@Path("sourceUrl") String sourceUrl,
+                                 @FieldMap Map<String, Object> params);
 }

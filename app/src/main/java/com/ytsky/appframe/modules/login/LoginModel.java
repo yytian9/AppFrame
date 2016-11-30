@@ -2,7 +2,7 @@ package com.ytsky.appframe.modules.login;
 
 import com.ytsky.appframe.entity.LoginInfo;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 
 /**
  * Author  Farsky
@@ -12,7 +12,7 @@ import io.reactivex.Observable;
 
 public class LoginModel implements LoginContract.Model {
     @Override
-    public Observable<LoginInfo> getLoginResult(String userName, String password) {
+    public Flowable<LoginInfo> getLoginResult(String userName, String password) {
         return null;
     }
 

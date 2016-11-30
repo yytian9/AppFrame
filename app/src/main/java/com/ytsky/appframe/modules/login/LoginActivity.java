@@ -6,7 +6,9 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.ytsky.appframe.R;
-import com.ytsky.appframe.http.schedulers.SchedulerProvider;
+import com.ytsky.appframe.base.BaseApplication;
+
+import javax.inject.Inject;
 
 /**
  * A login screen that offers login via email/password.
@@ -14,7 +16,7 @@ import com.ytsky.appframe.http.schedulers.SchedulerProvider;
 public class LoginActivity extends AppCompatActivity implements LoginContract.View, View.OnClickListener {
 
 
-    private LoginPresenter mPresenter;
+    @Inject LoginPresenter mPresenter;
     private EditText mEtUsername;
     private EditText mEtPassword;
     private View mProgressView;
@@ -23,10 +25,11 @@ public class LoginActivity extends AppCompatActivity implements LoginContract.Vi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        //create a model
+        /*//create a model
         LoginModel meModel = new LoginModel();
         //create the presenter for this fragment
-        mPresenter = new LoginPresenter(this, SchedulerProvider.getInstance(),meModel);
+        mPresenter = new LoginPresenter(this, SchedulerProvider.getInstance(),meModel);*/
+        ((BaseApplication) getApplication()).getNetComponent().inject(this);
 
         initView();
     }
@@ -49,6 +52,32 @@ public class LoginActivity extends AppCompatActivity implements LoginContract.Vi
             default:
                 break;
         }
+    }
+
+    @Override
+    public void showUserNameOrPasswordErrorToast() {
+
+    }
+
+    @Override
+    public void showSuccessView() {
+
+    }
+
+    @Override
+    public void showLoadingIndicator(boolean active) {
+
+    }
+
+    @Override
+    public void showFailuredToast() {
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mPresenter.unSubscribe();
     }
 }
 

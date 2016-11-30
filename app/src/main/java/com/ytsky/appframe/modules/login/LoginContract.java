@@ -1,9 +1,9 @@
 package com.ytsky.appframe.modules.login;
 
-import com.ytsky.appframe.http.base.BasePresenter;
 import com.ytsky.appframe.entity.LoginInfo;
+import com.ytsky.appframe.http.base.BasePresenter;
 
-import io.reactivex.Observable;
+import io.reactivex.Flowable;
 
 /**
  * Author  Farsky
@@ -13,6 +13,13 @@ import io.reactivex.Observable;
 
 public class LoginContract {
     interface View  {
+        void showUserNameOrPasswordErrorToast();
+
+        void showSuccessView();
+
+        void showLoadingIndicator(boolean active);
+
+        void showFailuredToast();
     }
 
     interface Presenter extends BasePresenter {
@@ -20,7 +27,7 @@ public class LoginContract {
         void login(String userName, String password);
     }
     interface Model{
-        Observable<LoginInfo> getLoginResult(String userName, String password);
+        Flowable<LoginInfo> getLoginResult(String userName, String password);
 
         void saveUserInfo(LoginInfo loginInfo);
     }
