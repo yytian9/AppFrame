@@ -1,4 +1,4 @@
-package com.ytsky.appframe.modules.login;
+package com.ytsky.appframe.modules.daggerlogin;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -6,17 +6,13 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.ytsky.appframe.R;
-import com.ytsky.appframe.http.retrofit.FungoReqeust;
-import com.ytsky.appframe.http.schedulers.SchedulerProvider;
 import com.ytsky.appframe.util.ToastUtils;
 
-/**
- * A login screen that offers login via email/password.
- */
-public class LoginActivity extends AppCompatActivity implements LoginContract.View, View.OnClickListener {
+import javax.inject.Inject;
 
-
-    /*@Inject */LoginPresenter mPresenter;
+public class DaggerLoginActivity extends AppCompatActivity implements DaggerLoginContract.View, View.OnClickListener {
+    @Inject
+    DaggerLoginPresenter mPresenter;
     private EditText mEtUsername;
     private EditText mEtPassword;
     private View mProgressView;
@@ -24,15 +20,24 @@ public class LoginActivity extends AppCompatActivity implements LoginContract.Vi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        //create a model
-        LoginModel meModel = new LoginModel(FungoReqeust.getInstance());
+        setContentView(R.layout.activity_dagger_login);
+        /*//create a model
+        DaggerLoginModel meModel = new DaggerLoginModel(FungoReqeust.getInstance());
         //create the presenter for this fragment
-        mPresenter = new LoginPresenter(this, SchedulerProvider.getInstance(),meModel);
-//        ((BaseApplication) getApplication()).getNetComponent().inject(this);
+        mPresenter = new DaggerLoginPresenter(this, SchedulerProvider.getInstance(), meModel);
+        //        ((BaseApplication) getApplication()).getNetComponent().inject(this);*/
+
+
+        DaggerDaggerLoginComponent
+                .builder()
+                .daggerLoginModule(new DaggerLoginModule(this))
+                .build()
+                .inject(this);
+
 
         initView();
     }
+
 
     private void initView() {
         mProgressView = findViewById(R.id.login_progress);
@@ -43,11 +48,11 @@ public class LoginActivity extends AppCompatActivity implements LoginContract.Vi
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.btn_login:
                 String userName = mEtUsername.getText().toString().trim();
                 String password = mEtPassword.getText().toString().trim();
-                mPresenter.login(userName,password);
+                mPresenter.login(userName, password);
                 break;
             default:
                 break;
@@ -56,22 +61,22 @@ public class LoginActivity extends AppCompatActivity implements LoginContract.Vi
 
     @Override
     public void showUserNameOrPasswordErrorToast() {
-        ToastUtils.openToast("用户名或密码错误",ToastUtils.TYPE_ERROR);
+        ToastUtils.openToast("用户名或密码错误", ToastUtils.TYPE_ERROR);
     }
 
     @Override
     public void showSuccessView() {
-        ToastUtils.openToast("登录成功",ToastUtils.TYPE_SUCCESE);
+        ToastUtils.openToast("登录成功", ToastUtils.TYPE_SUCCESE);
     }
 
     @Override
     public void showLoadingIndicator(boolean active) {
-
+        mProgressView.setVisibility(active ? View.VISIBLE : View.GONE);
     }
 
     @Override
     public void showFailureToast() {
-        ToastUtils.openToast("登录失败",ToastUtils.TYPE_ERROR);
+        ToastUtils.openToast("登录失败", ToastUtils.TYPE_ERROR);
     }
 
     @Override
@@ -80,4 +85,3 @@ public class LoginActivity extends AppCompatActivity implements LoginContract.Vi
         mPresenter.unSubscribe();
     }
 }
-

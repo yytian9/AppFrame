@@ -14,4 +14,5 @@ public class MessageCode {
     public static final int REQUEST_PARAMS_ERROR = 903;  //receive a Error when try to  get the request params : the json of mDataBean
     public static final int HTTP_SERIES_ERROR = 904;  //ConnectException ||SocketTimeoutException||TimeoutException|| HttpException
     public static final int LOCAL_DATA_ERROR = 905;  //local computing error
+    public static final int LOADPAGE_EMPTY_DATA = 906;  //requets empty or null data,this code is normal state
 }

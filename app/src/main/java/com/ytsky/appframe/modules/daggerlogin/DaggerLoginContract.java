@@ -1,4 +1,4 @@
-package com.ytsky.appframe.modules.login;
+package com.ytsky.appframe.modules.daggerlogin;
 
 import com.ytsky.appframe.entity.LoginInfo;
 import com.ytsky.appframe.http.base.BasePresenter;
@@ -6,12 +6,12 @@ import com.ytsky.appframe.http.base.BasePresenter;
 import io.reactivex.Flowable;
 
 /**
- * Author  Farsky
- * Date    2016/11/29 0029
- * Des
+ * author:  yytian
+ * time:    2016/12/1 0001 上午 10:07
+ * des:
  */
 
-public class LoginContract {
+public interface DaggerLoginContract {
     interface View  {
         void showUserNameOrPasswordErrorToast();
 

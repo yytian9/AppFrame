@@ -1,13 +1,12 @@
 package com.ytsky.appframe.http.dependency;
 
 import android.app.Application;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import com.ytsky.appframe.http.retrofit.LoggingInterceptor;
 
 import java.util.concurrent.TimeUnit;
 
@@ -34,14 +33,6 @@ public class NetModule {
         this.mBaseUrl = baseUrl;
     }
 
-    // Dagger will only look for methods annotated with @Provides
-    @Provides
-    @Singleton
-    // Application reference must come from AppModule.class
-    SharedPreferences providesSharedPreferences(Application application) {
-        return PreferenceManager.getDefaultSharedPreferences(application);
-    }
-
     @Provides
     @Singleton
     Cache provideOkHttpCache(Application application) {
@@ -59,8 +50,9 @@ public class NetModule {
 
     @Provides
     @Singleton
-    OkHttpClient provideOkHttpClient(Cache cache) {
+    OkHttpClient provideOkHttpClient(Cache cache , LoggingInterceptor interceptor) {
         return new OkHttpClient.Builder()
+                .addInterceptor(interceptor)
                 .readTimeout(3, TimeUnit.SECONDS)
                 .connectTimeout(3, TimeUnit.SECONDS)
                 .cache(cache)
@@ -76,5 +68,10 @@ public class NetModule {
                 .baseUrl(mBaseUrl)
                 .client(client)
                 .build();
+    }
+    @Provides
+    @Singleton
+    LoggingInterceptor provideLogginInterceptor() {
+        return new LoggingInterceptor();
     }
 }

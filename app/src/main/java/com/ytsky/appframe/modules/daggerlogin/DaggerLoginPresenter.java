@@ -1,29 +1,30 @@
-package com.ytsky.appframe.modules.login;
+package com.ytsky.appframe.modules.daggerlogin;
 
 import com.ytsky.appframe.entity.LoginInfo;
 import com.ytsky.appframe.http.schedulers.BaseSchedulerProvider;
 import com.ytsky.appframe.http.subscribe.HttpSubscribe;
 import com.ytsky.appframe.util.StringUtils;
 
+import javax.inject.Inject;
+
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subscribers.ResourceSubscriber;
 
 /**
- * Author  Farsky
- * Date    2016/11/29 0029
- * Des
+ * author:  yytian
+ * time:    2016/12/1 0001 上午 10:09
+ * des:
  */
 
-public class LoginPresenter implements LoginContract.Presenter {
-
-    private final LoginContract.View mView;
+public class DaggerLoginPresenter implements DaggerLoginContract.Presenter {
+    private final DaggerLoginContract.View mView;
     private final BaseSchedulerProvider mSchedulerProvider;
     private final CompositeDisposable mSubscriptions;
-    private final LoginContract.Model mModel;
+    private final DaggerLoginContract.Model mModel;
 
-//    @Inject
-    public LoginPresenter(LoginContract.View view, BaseSchedulerProvider schedulerProvider,
-                                  LoginContract.Model model) {
+    @Inject
+    public DaggerLoginPresenter(DaggerLoginContract.View view, BaseSchedulerProvider schedulerProvider,
+                          DaggerLoginContract.Model model) {
         mModel = model;
         mView = view;
         mSchedulerProvider = schedulerProvider;

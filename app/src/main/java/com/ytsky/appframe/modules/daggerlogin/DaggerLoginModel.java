@@ -1,4 +1,4 @@
-package com.ytsky.appframe.modules.login;
+package com.ytsky.appframe.modules.daggerlogin;
 
 import android.support.v4.util.ArrayMap;
 
@@ -11,15 +11,16 @@ import com.ytsky.appframe.util.MapUtils;
 import io.reactivex.Flowable;
 
 /**
- * Author  Farsky
- * Date    2016/11/29 0029
- * Des
+ * author:  yytian
+ * time:    2016/12/1 0001 上午 10:08
+ * des:
  */
 
-public class LoginModel implements LoginContract.Model {
+public class DaggerLoginModel implements DaggerLoginContract.Model {
+
     private final FungoReqeust mRequest;
 
-    public LoginModel(FungoReqeust request) {
+    public DaggerLoginModel(FungoReqeust request) {
         mRequest = request;
     }
     @Override

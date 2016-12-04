@@ -4,6 +4,7 @@ import android.support.v4.util.ArrayMap;
 import android.util.Log;
 
 import com.google.gson.JsonElement;
+import com.jakewharton.retrofit2.adapter.rxjava2.HttpException;
 import com.ytsky.appframe.constant.MessageCode;
 import com.ytsky.appframe.constant.ParamName;
 import com.ytsky.appframe.constant.ParamValues;
@@ -26,7 +27,6 @@ import io.reactivex.Flowable;
 import io.reactivex.FlowableEmitter;
 import io.reactivex.FlowableOnSubscribe;
 import io.reactivex.functions.Function;
-import retrofit2.adapter.rxjava.HttpException;
 
 /**
  * Author  Farsky
