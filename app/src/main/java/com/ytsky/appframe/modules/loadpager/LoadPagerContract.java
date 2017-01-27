@@ -13,11 +13,12 @@ import io.reactivex.Flowable;
 
 public class LoadPagerContract {
     interface View  {
+        void refreshInitView(LoadedResult result);
     }
 
     interface Presenter extends BasePresenter {
 
-        LoadedResult loadInitData();
+        void loadInitData();
     }
     interface Model{
         Flowable<Integer> getInitData();

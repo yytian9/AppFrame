@@ -6,6 +6,9 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
+import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.SDKOptions;
+import com.netease.nimlib.sdk.auth.LoginInfo;
 import com.ytsky.appframe.constant.CommonData;
 import com.ytsky.appframe.http.dependency.DaggerNetComponent;
 import com.ytsky.appframe.http.dependency.NetComponent;
@@ -43,6 +46,26 @@ public class BaseApplication extends Application {
                 .build();
 
         ComponetHolder.setAppComponent(mNetComponent);
+
+        //初始化云通信
+        initNim();
+
+    }
+
+    private void initNim() {
+        // SDK初始化（启动后台服务，若已经存在用户登录信息， SDK 将完成自动登录）
+        NIMClient.init(this, loginInfo(), options());
+    }
+
+
+    // 如果已经存在用户登录信息，返回LoginInfo，否则返回null即可
+    private LoginInfo loginInfo() {
+
+        return null;
+    }
+    private SDKOptions options() {
+        SDKOptions options = new SDKOptions();
+        return options;
 
     }
 

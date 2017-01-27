@@ -18,6 +18,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    sourceSets.main {
+        jniLibs.srcDirs 'libs'
+        jni.srcDirs = [] // This prevents the auto generation of Android.mk
+    }
 }
 repositories {
     flatDir {
@@ -44,6 +48,7 @@ dependencies {
     testCompile 'org.powermock:powermock-module-junit4-rule:1.6.5'
     testCompile 'org.powermock:powermock-api-mockito:1.6.5'
     testCompile 'org.robolectric:robolectric:3.1.2'
+//    testCompile 'org.robolectric:android-all:7.1.0_r7-robolectric-0'
     compile 'io.reactivex.rxjava2:rxjava:2.0.1'
     compile 'com.facebook.fresco:fresco:0.14.1'
     compile 'com.squareup.okhttp3:okhttp:3.4.2'

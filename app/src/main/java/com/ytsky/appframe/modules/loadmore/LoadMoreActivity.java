@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 
 import com.ytsky.appframe.R;
+import com.ytsky.appframe.http.base.RequestError;
 import com.ytsky.appframe.http.subscribe.HttpSubscribe;
 import com.ytsky.appframe.ui.widget.LoadMoreRecyclerView;
 
@@ -24,6 +25,8 @@ public class LoadMoreActivity extends AppCompatActivity {
     private LoadMoreRecyclerView mRecyclerView;
     private LoadMoreAdapter mLoadMoreAdapter;
 
+    public int mCount = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,38 +37,55 @@ public class LoadMoreActivity extends AppCompatActivity {
         mRecyclerView.setLoadingListener(new LoadMoreRecyclerView.LoadingListener() {
             @Override
             public void onLoadMore() {
+                loadDataAndRefresh();
+            }
 
-                Flowable
-                        .create(new FlowableOnSubscribe<List<String>>() {
-                            @Override
-                            public void subscribe(FlowableEmitter<List<String>> e) throws Exception {
-                                e.onNext(getData());
-                            }
-                        }, BackpressureStrategy.BUFFER)
-                        .delay(3000, TimeUnit.MILLISECONDS)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeWith(new HttpSubscribe<List<String>>() {
-                            @Override
-                            public void _onStart() {
-                            }
-
-                            @Override
-                            public void onNext(List<String> o) {
-                                mLoadMoreAdapter.addData(o);
-                                mRecyclerView.onLoadMoreComplete();
-                            }
-
-                            @Override
-                            public void onError(Throwable t) {
-
-                            }
-                        });
-
+            @Override
+            public void onLoadMoreRetry() {
+                mCount=0;
+                loadDataAndRefresh();
             }
         });
 
         init();
+    }
+
+    private void loadDataAndRefresh() {
+        Flowable.create(new FlowableOnSubscribe<List<String>>() {
+                    @Override
+                    public void subscribe(FlowableEmitter<List<String>> e) throws Exception {
+                        if(mCount<1) {
+                            e.onNext(getData());
+                        }else {
+                            e.onError(new RequestError(906,"kkkkkkkkk"));
+                        }
+                        mCount++;
+                    }
+                }, BackpressureStrategy.BUFFER)
+                .delay(3000, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new HttpSubscribe<List<String>>() {
+                    @Override
+                    public void _onStart() {
+                        mRecyclerView.refreshLoadMoreState(LoadMoreRecyclerView.LOADMORE_LOADING);
+                    }
+
+                    @Override
+                    public void onNext(List<String> o) {
+                        mLoadMoreAdapter.addData(o);
+                        if (o != null) {
+                            mRecyclerView.onLoadMoreComplete(LoadMoreRecyclerView.LOADMORE_LOADING);
+                        } else if (o == null || o.size() == 0) {
+                            mRecyclerView.onLoadMoreComplete(LoadMoreRecyclerView.LOADMORE_NONE);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        mRecyclerView.onLoadMoreComplete(LoadMoreRecyclerView.LOADMORE_ERROR);
+                    }
+                });
     }
 
     private void init() {

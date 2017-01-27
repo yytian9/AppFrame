@@ -5,19 +5,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.ytsky.appframe.R;
-import com.ytsky.appframe.constant.MessageCode;
-import com.ytsky.appframe.http.base.RequestError;
-import com.ytsky.appframe.http.subscribe.HttpSubscribe;
-
-import org.reactivestreams.Publisher;
-
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.FlowableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
 
 
 /**
@@ -31,19 +18,18 @@ public abstract class LoadingPager extends FrameLayout {
     private View mEmptyView;
     private View mSuccessView;
     private Context mContext;
-//    public int mCurState = LoadState.NONE;    // 默认显示loading视图
-    private LoadedResult mTempState;
 
-    public static final int NONE = -1;
-    public static final int LOADING = 0;
-    public static final int EMPTY = 1;
-    public static final int ERROR = 2;
-    public static final int SUCCESS = 3;
+    public static final int STATE_NONE = -1;
+    public static final int STATE_LOADING = 0;
+    public static final int STATE_EMPTY = 1;
+    public static final int STATE_ERROR = 2;
+    public static final int STATE_SUCCESS = 3;
 
     public LoadingPager(Context context) {
         super(context);
         this.mContext = context;
         initCommonView();
+        initData();
     }
 
 
@@ -66,82 +52,38 @@ public abstract class LoadingPager extends FrameLayout {
         mErrorView.findViewById(R.id.error_btn_retry).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                triggerLoadData();
+                initData();
             }
 
 
         });
+        //成功界面
+        mSuccessView = initSuccessView();
+        addView(mSuccessView);
+
         // 根据当前的状态,显示其中某一个视图
-        refreshUIByState(LoadState.LOADING);
+        refreshUIByState(STATE_LOADING);
     }
 
     public void refreshUIByState(int state) {
-        mLoadingView.setVisibility((state == LoadState.LOADING) || (state == LoadState.NONE) ? View.VISIBLE : View.GONE);
-        mEmptyView.setVisibility((state == LoadState.EMPTY) ? View.VISIBLE : View.GONE);
-        mErrorView.setVisibility((state == LoadState.ERROR) ? View.VISIBLE : View.GONE);
-        // 如果是数据加载完成之后来到这里,那么就可能有成功视图了吧.
-        if (state == LoadState.SUCCESS && mSuccessView == null) {
-            mSuccessView = initSuccessView();
-            addView(mSuccessView);
-        }
+        mLoadingView.setVisibility((state == STATE_LOADING) || (state == STATE_NONE) ? View.VISIBLE : View.GONE);
+        mEmptyView.setVisibility((state == STATE_EMPTY) ? View.VISIBLE : View.GONE);
+        mErrorView.setVisibility((state == STATE_ERROR) ? View.VISIBLE : View.GONE);
         // 控制成功视图的显示/隐藏
         if (mSuccessView != null) {
-            mSuccessView.setVisibility((state == LoadState.SUCCESS) ? View.VISIBLE : View.GONE);
+            mSuccessView.setVisibility((state == STATE_SUCCESS) ? View.VISIBLE : View.GONE);
         }
     }
 
-    public void triggerLoadData() {
-        //        if (mCurState != LoadState.SUCCESS && mCurState != LoadState.LOADING) {
-        Flowable.just(1)
-                .subscribeOn(Schedulers.io())
-                .flatMap(new Function<Integer, Publisher<Integer>>() {
-                    @Override
-                    public Publisher<Integer> apply(Integer integer) throws Exception {
-                        // 2. load data from net work,it must be async
-                        return Flowable.create(new FlowableOnSubscribe<Integer>() {
-                            @Override
-                            public void subscribe(FlowableEmitter<Integer> e) throws Exception {
-                                LoadedResult tempState = initData();
-                                if(tempState!=null){
-//                                    mCurState = tempState.getState();
-                                    e.onNext(tempState.getState());
-                                }else {
-                                    e.onError(new RequestError(MessageCode.LOADPAGE_EMPTY_DATA,"loadpage 常规错误"));
-                                }
-                            }
-                        }, BackpressureStrategy.BUFFER);
-                    }
-                })
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new HttpSubscribe<Integer>() {
-                    @Override
-                    public void _onStart() {
-                        super._onStart();
-                        refreshUIByState(LoadState.LOADING);
 
-                    }
+    /**
+     * use for init data,for most case: use for first come into page
+     */
+    public abstract void initData();
 
-                    @Override
-                    public void onNext(Integer integer) {
-                        // 3. refresh view after load data
-                        refreshUIByState(LoadState.SUCCESS);
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-                        t.printStackTrace();
-                        refreshUIByState(LoadState.ERROR);
-                    }
-                });
-        //        }
-    }
-
-    public abstract LoadedResult initData();
-
+    /**
+     * @return the view must be show
+     */
     public abstract View initSuccessView();
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-    }
 }

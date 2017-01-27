@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.ytsky.appframe.R;
 
@@ -30,6 +31,8 @@ public class LoadMoreRecyclerView extends RecyclerView {
     public static final int LOADMORE_ERROR = 1;//加载更多失败
     public static final int LOADMORE_NONE = 2;//没有加载更多
 
+    public int mCurrentLoadMoreState=LOADMORE_LOADING;// default is loading
+
     public LoadMoreRecyclerView(Context context) {
         this(context, null);
     }
@@ -40,32 +43,23 @@ public class LoadMoreRecyclerView extends RecyclerView {
 
     public LoadMoreRecyclerView(Context context,  AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init();
     }
 
-    private void init() {
-        addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
+    @Override
+    public void onScrolled(int dx, int dy) {
+        super.onScrolled(dx, dy);
+        int lastVisibleItem = getLastVisibleItemPosition();
+        int totalItemCount = getLayoutManager().getItemCount();
+        if (!isLoadingMoreEnabled) {
+            return;
+        }
+        if (!isLoading && lastVisibleItem >= totalItemCount - 2 && dy > 0 && mCurrentLoadMoreState!=LOADMORE_ERROR) {
+            isLoading = true;
+            if (mLoadingListener != null) {
+                mLoadingListener.onLoadMore();
             }
+        }
 
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                int lastVisibleItem = getLastVisibleItemPosition();
-                int totalItemCount = getLayoutManager().getItemCount();
-                if (!isLoadingMoreEnabled) {
-                    return;
-                }
-                if (!isLoading && lastVisibleItem >= totalItemCount - 2 && dy > 0) {
-                    isLoading = true;
-                    if (mLoadingListener != null) {
-                        mLoadingListener.onLoadMore();
-                    }
-                }
-            }
-        });
     }
 
 
@@ -95,9 +89,6 @@ public class LoadMoreRecyclerView extends RecyclerView {
         return null;
     }
 
-    public void refreshLoadMoreState(){
-
-    }
 
     public void setLoadingListener(LoadingListener listener) {
         mLoadingListener = listener;
@@ -106,44 +97,17 @@ public class LoadMoreRecyclerView extends RecyclerView {
     /**
      * 加载完成之后必须调用该方法
      */
-    public void onLoadMoreComplete() {
+    public void onLoadMoreComplete(int state) {
+        mCurrentLoadMoreState = state;
         isLoading = false;
+        mWrapAdapter.notifyDataSetChanged();
     }
 
-    @Override
-    public void onScrolled(int dx, int dy) {
-        super.onScrolled(dx, dy);
 
+    public void refreshLoadMoreState(int state){
+        mCurrentLoadMoreState = state;
+        mWrapAdapter.notifyDataSetChanged();
     }
-
-    /*@Override
-    public void onScrollStateChanged(int state) {
-        super.onScrollStateChanged(state);
-        if (state == RecyclerView.SCROLL_STATE_IDLE && mLoadingListener != null && !isLoadingData && loadingMoreEnabled) {
-            LayoutManager layoutManager = getLayoutManager();
-            int lastVisibleItemPosition;
-            if (layoutManager instanceof GridLayoutManager) {
-                lastVisibleItemPosition = ((GridLayoutManager) layoutManager).findLastVisibleItemPosition();
-            } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-                int[] into = new int[((StaggeredGridLayoutManager) layoutManager).getSpanCount()];
-                ((StaggeredGridLayoutManager) layoutManager).findLastVisibleItemPositions(into);
-                lastVisibleItemPosition = findMax(into);
-            } else {
-                lastVisibleItemPosition = ((LinearLayoutManager) layoutManager).findLastVisibleItemPosition();
-            }
-            if (layoutManager.getChildCount() > 0
-                    && lastVisibleItemPosition >= layoutManager.getItemCount() - 1 && layoutManager.getItemCount() > layoutManager.getChildCount() && !isNoMore && mRefreshHeader.getState() < ArrowRefreshHeader.STATE_REFRESHING) {
-                isLoadingData = true;
-                if (mFootView instanceof LoadingMoreFooter) {
-                    ((LoadingMoreFooter) mFootView).setState(LoadingMoreFooter.STATE_LOADING);
-                } else {
-                    mFootView.setVisibility(View.VISIBLE);
-                }
-                mLoadingListener.onLoadMore();
-            }
-        }
-    }*/
-
 
     class WrapAdapter extends RecyclerView.Adapter<ViewHolder> {
 
@@ -169,7 +133,7 @@ public class LoadMoreRecyclerView extends RecyclerView {
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             Context context = parent.getContext();
             if (viewType == TYPE_FOOTER) {
-                View view = LayoutInflater.from(context).inflate(R.layout.item_loadmore_loading, parent, false);
+                View view = LayoutInflater.from(context).inflate(R.layout.item_load_more_new, parent, false);
                 return new FootViewHolder(view);
             }
             return adapter.onCreateViewHolder(parent, viewType);
@@ -179,6 +143,15 @@ public class LoadMoreRecyclerView extends RecyclerView {
         public void onBindViewHolder(ViewHolder holder, int position) {
             if (adapter != null && !isFooter(position)) {
                 adapter.onBindViewHolder(holder, position);
+            } else if(isFooter(position)){
+                FootViewHolder footViewHolder = (FootViewHolder) holder;
+                footViewHolder.refreshHolderView(mCurrentLoadMoreState);
+                footViewHolder.mItemLoadmoreContainerRetry.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mLoadingListener.onLoadMoreRetry();
+                    }
+                });
             }
         }
 
@@ -204,14 +177,19 @@ public class LoadMoreRecyclerView extends RecyclerView {
     }
 
     static class FootViewHolder extends RecyclerView.ViewHolder {
-
+        public LinearLayout mItemLoadmoreContainerLoading;
+        public LinearLayout mItemLoadmoreContainerNone;
+        public LinearLayout mItemLoadmoreContainerRetry;
 
         public FootViewHolder(View itemView) {
             super(itemView);
+            mItemLoadmoreContainerLoading= (LinearLayout) itemView.findViewById(R.id.item_loadmore_container_loading);
+            mItemLoadmoreContainerRetry= (LinearLayout) itemView.findViewById(R.id.item_loadmore_container_retry);
+            mItemLoadmoreContainerNone= (LinearLayout) itemView.findViewById(R.id.item_loadmore_container_none);
         }
 
         public void refreshHolderView(int state) {
-            /*mItemLoadmoreContainerLoading.setVisibility(View.GONE);
+            mItemLoadmoreContainerLoading.setVisibility(View.GONE);
             mItemLoadmoreContainerRetry.setVisibility(View.GONE);
             mItemLoadmoreContainerNone.setVisibility(View.GONE);
             switch (state) {
@@ -226,13 +204,15 @@ public class LoadMoreRecyclerView extends RecyclerView {
                     break;
                 default:
                     break;
-            }*/
+            }
         }
     }
 
     public interface LoadingListener {
 
         void onLoadMore();
+
+        void onLoadMoreRetry();
     }
 
     private class DataObserver extends RecyclerView.AdapterDataObserver {
@@ -269,3 +249,34 @@ public class LoadMoreRecyclerView extends RecyclerView {
         }
     }
 }
+
+
+
+
+    /*@Override
+    public void onScrollStateChanged(int state) {
+        super.onScrollStateChanged(state);
+        if (state == RecyclerView.SCROLL_STATE_IDLE && mLoadingListener != null && !isLoadingData && loadingMoreEnabled) {
+            LayoutManager layoutManager = getLayoutManager();
+            int lastVisibleItemPosition;
+            if (layoutManager instanceof GridLayoutManager) {
+                lastVisibleItemPosition = ((GridLayoutManager) layoutManager).findLastVisibleItemPosition();
+            } else if (layoutManager instanceof StaggeredGridLayoutManager) {
+                int[] into = new int[((StaggeredGridLayoutManager) layoutManager).getSpanCount()];
+                ((StaggeredGridLayoutManager) layoutManager).findLastVisibleItemPositions(into);
+                lastVisibleItemPosition = findMax(into);
+            } else {
+                lastVisibleItemPosition = ((LinearLayoutManager) layoutManager).findLastVisibleItemPosition();
+            }
+            if (layoutManager.getChildCount() > 0
+                    && lastVisibleItemPosition >= layoutManager.getItemCount() - 1 && layoutManager.getItemCount() > layoutManager.getChildCount() && !isNoMore && mRefreshHeader.getState() < ArrowRefreshHeader.STATE_REFRESHING) {
+                isLoadingData = true;
+                if (mFootView instanceof LoadingMoreFooter) {
+                    ((LoadingMoreFooter) mFootView).setState(LoadingMoreFooter.STATE_LOADING);
+                } else {
+                    mFootView.setVisibility(View.VISIBLE);
+                }
+                mLoadingListener.onLoadMore();
+            }
+        }
+    }*/

@@ -28,6 +28,7 @@ import com.ksyun.media.player.KSYMediaPlayer;
 import com.ksyun.media.player.KSYTextureView;
 import com.ksyun.media.player.misc.KSYQosInfo;
 import com.ytsky.appframe.R;
+import com.ytsky.appframe.util.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,9 +40,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-/**
- * Created by shichang on 9/23/16.
- */
 public class TextureVideoActivity extends Activity implements View.OnClickListener{
 
     private static final String TAG = "TextureVideoActivity";
@@ -293,7 +291,7 @@ public class TextureVideoActivity extends Activity implements View.OnClickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mContext = this.getApplicationContext();
+        mContext = this;
         useHwCodec = getIntent().getBooleanExtra("HWCodec", false);
 
         setContentView(R.layout.texture_player);
@@ -416,7 +414,7 @@ public class TextureVideoActivity extends Activity implements View.OnClickListen
 
         if (useHwCodec) {
             //硬解264&265
-            Log.e(TAG, "Hardware !!!!!!!!");
+            Logger.e(TAG+"Hardware !!!!!!!!");
             mVideoView.setDecodeMode(KSYMediaPlayer.KSYDecodeMode.KSY_DECODE_MODE_AUTO);
         }
 

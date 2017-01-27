@@ -21,7 +21,7 @@ public class LoadPagerPresenter implements LoadPagerContract.Presenter {
     private final BaseSchedulerProvider mSchedulerProvider;
     private final CompositeDisposable mSubscriptions;
     private final LoadPagerContract.Model mModel;
-    LoadedResult result/* = LoadedResult.EMPTY */;
+//    LoadedResult result/* = LoadedResult.EMPTY */;
     @Inject
     public LoadPagerPresenter(LoadPagerContract.View view, BaseSchedulerProvider schedulerProvider,
                                 LoadPagerContract.Model model) {
@@ -41,7 +41,7 @@ public class LoadPagerPresenter implements LoadPagerContract.Presenter {
     }
 
     @Override
-    public LoadedResult loadInitData() {
+    public void loadInitData() {
 
         HttpSubscribe<Integer> httpSubscribe = mModel.getInitData()
                 .subscribeOn(mSchedulerProvider.io())
@@ -50,19 +50,21 @@ public class LoadPagerPresenter implements LoadPagerContract.Presenter {
 
                     @Override
                     public void onNext(Integer o) {
-                        result = LoadedResult.SUCCESS;
+//                        result = LoadedResult.SUCCESS;
                         ToastUtils.openToast("加载成功",ToastUtils.TYPE_SUCCESE);
+                        mView.refreshInitView(LoadedResult.SUCCESS);
                     }
 
                     @Override
                     public void onError(Throwable t) {
-                        result = LoadedResult.ERROR;
+//                        result = LoadedResult.ERROR;
                         ToastUtils.openToast("加载失败",ToastUtils.TYPE_ERROR);
+                        mView.refreshInitView(LoadedResult.ERROR);
                     }
                 });
         mSubscriptions.add(httpSubscribe);
 
 
-        return result;
+//        return result;
     }
 }

@@ -18,10 +18,16 @@ public class LoadPagerActivity extends AppCompatActivity implements LoadPagerCon
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //create a model
+        LoadPagerModel meModel = new LoadPagerModel(FungoReqeust.getInstance());
+        //create the presenter for this fragment
+        mPresenter = new LoadPagerPresenter(this, SchedulerProvider.getInstance(), meModel);
+
         mLoadingPager = new LoadingPager(this) {
             @Override
-            public LoadedResult initData() {
-                return mPresenter.loadInitData();
+            public void initData() {
+                mPresenter.loadInitData();
             }
 
             @Override
@@ -31,17 +37,10 @@ public class LoadPagerActivity extends AppCompatActivity implements LoadPagerCon
         };
 
         setContentView(mLoadingPager);
-
-        //create a model
-        LoadPagerModel meModel = new LoadPagerModel(FungoReqeust.getInstance());
-        //create the presenter for this fragment
-        mPresenter = new LoadPagerPresenter(this, SchedulerProvider.getInstance(), meModel);
-
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mLoadingPager.triggerLoadData();
+    public void refreshInitView(LoadedResult result) {
+        mLoadingPager.refreshUIByState(result.getState());
     }
 }
